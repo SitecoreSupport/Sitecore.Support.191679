@@ -35,11 +35,19 @@ namespace Sitecore.Support.Sharepoint.Pipelines.ProcessIntegrationItem
       if (sourceSharepointDocumentItem != null)
       {
         Field innerField = integrationItem.Fields["__Modified"];
-        if ((innerField == null) || (DateUtil.ToServerTime(new DateField(innerField).DateTime) != DateUtil.ToServerTime(System.Convert.ToDateTime(sourceSharepointDocumentItem["ows_Modified"]).ToUniversalTime())))
+        if (innerField == null || IsModified(innerField, sourceSharepointDocumentItem))
         {
           IntegrationItemProvider.UpdateBlob(integrationItem, sourceSharepointDocumentItem, synchContext);
         }
       }
+    }
+
+    protected bool IsModified(Field innerField, DocumentItem sourceSharepointDocumentItem)
+    {
+      var scDate = DateUtil.ToServerTime(new DateField(innerField).DateTime);
+      var spDateOriginal = DateUtil.ParseDateTime(sourceSharepointDocumentItem["ows_Modified"], DateTime.MinValue);
+      var spDateFinal = DateUtil.ToServerTime(DateUtil.ToUniversalTime(spDateOriginal));
+      return spDateFinal != scDate;
     }
   }
 }
